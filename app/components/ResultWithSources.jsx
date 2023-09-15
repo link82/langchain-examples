@@ -30,12 +30,6 @@ const MessageItem = ({ message, pngFile, isLast }) => {
 
       {message.sourceDocuments && (
         <div className="mb-6">
-          <button
-            className="text-gray-600 text-sm font-bold"
-            onClick={() => setShowSources(!showSources)}
-          >
-            Source Documents {showSources ? "(Hide)" : "(Show)"}
-          </button>
           {showSources &&
             message.sourceDocuments.map((document, docIndex) => (
               <div key={docIndex}>
@@ -50,6 +44,12 @@ const MessageItem = ({ message, pngFile, isLast }) => {
                 </pre>
               </div>
             ))}
+          <button
+            className="text-gray-600 text-sm font-bold"
+            onClick={() => setShowSources(!showSources)}
+          >
+            Source Documents {showSources ? "(Hide)" : "(Show)"}
+          </button>
         </div>
       )}
     </div>

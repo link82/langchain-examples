@@ -13,7 +13,7 @@ import "../globals.css";
 // This functional component is responsible for loading PDFs
 const PDFLoader = () => {
   // Managing prompt, messages, and error states with useState
-  const [prompt, setPrompt] = useState("How to get rich?");
+  const [prompt, setPrompt] = useState("Chiedi qualunque cosa");
   const [messages, setMessages] = useState([
     {
       text: "Hi, I'm a Naval AI. What would you like to know?",
@@ -42,6 +42,7 @@ const PDFLoader = () => {
       // The response from the backend is parsed as JSON
       const searchRes = await response.json();
       console.log(searchRes);
+      alert("PDF uploaded successfully!");
       setError(""); // Clear any existing error messages
     } catch (error) {
       console.log(error);
@@ -136,7 +137,7 @@ const PDFLoader = () => {
               handlePromptChange={handlePromptChange}
               handleSubmit={() => handleSubmitPrompt("/pdf-query")}
               // handleSubmit={() => handleSubmitQuery("/pdfquery-agent")}
-              placeHolderText={"How to get rich?"}
+              placeHolderText={"Chiedi qualunque cosa"}
               error={error}
             />
           </>

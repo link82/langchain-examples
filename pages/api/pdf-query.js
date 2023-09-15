@@ -1,8 +1,8 @@
-import { PineconeClient } from "@pinecone-database/pinecone";
 import { VectorDBQAChain } from "langchain/chains";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { OpenAI } from "langchain/llms/openai";
-import { PineconeStore } from "langchain/vectorstores/pinecone";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { createClient } from '@supabase/supabase-js'
+import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
 
 // Example: https://js.langchain.com/docs/modules/indexes/document_loaders/examples/file_loaders/pdf
 export default async function handler(req, res) {
@@ -24,9 +24,34 @@ export default async function handler(req, res) {
 
     /* Use as part of a chain (currently no metadata filters) */
 
-    // Initialize Pinecone
+    /* Better search approach using Supabase hybrid search */
+    // https://js.langchain.com/docs/modules/data_connection/retrievers/integrations/supabase-hybrid/
+
+    // Initialize Supabase
+    const privateKey = process.env.SUPABASE_PRIVATE_KEY;
+    if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
+
+    const url = process.env.SUPABASE_URL;
+    if (!url) throw new Error(`Expected env var SUPABASE_URL`);
+
+    const client = createClient(url, privateKey);
+
+    // init VectorStore
+    const vectorStore = await SupabaseVectorStore.fromExistingIndex(
+      new OpenAIEmbeddings(),
+      { client, tableName: "documents", queryName: "match_documents" }
+    );
+
+    // init chain to OpenAI
+    const model = new OpenAI();
+    const chain = VectorDBQAChain.fromLLM(model, vectorStore, {
+      k: 1,
+      returnSourceDocuments: true,
+    });
 
     // Search!
+    const response = await chain.call({ query: input });
+    console.log("response:", response);
 
     return res.status(200).json({ result: response });
   } catch (error) {

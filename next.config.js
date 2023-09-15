@@ -16,6 +16,8 @@ const nextConfig = {
     PINECONE_API_KEY: process.env.PINECONE_API_KEY,
     PINECONE_ENVIRONMENT: process.env.PINECONE_ENVIRONMENT,
     PINECONE_INDEX: process.env.PINECONE_INDEX,
+    SUPABASE_PRIVATE_KEY: process.env.SUPABASE_PRIVATE_KEY,
+    SUPABASE_URL: process.env.SUPABASE_URL,
   }
 };
 
