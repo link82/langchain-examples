@@ -1,8 +1,9 @@
 import { VectorDBQAChain } from "langchain/chains";
 import { OpenAI } from "langchain/llms/openai";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { createClient } from '@supabase/supabase-js'
-import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
+// import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+// import { createClient } from '@supabase/supabase-js'
+// import { SupabaseVectorStore } from 'langchain/vectorstores/supabase'
+import { attachToStore } from "utils/supabase";
 
 // Example: https://js.langchain.com/docs/modules/indexes/document_loaders/examples/file_loaders/pdf
 export default async function handler(req, res) {
@@ -28,19 +29,16 @@ export default async function handler(req, res) {
     // https://js.langchain.com/docs/modules/data_connection/retrievers/integrations/supabase-hybrid/
 
     // Initialize Supabase
-    const privateKey = process.env.SUPABASE_PRIVATE_KEY;
-    if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
+    // const privateKey = process.env.SUPABASE_PRIVATE_KEY;
+    // if (!privateKey) throw new Error(`Expected env var SUPABASE_PRIVATE_KEY`);
 
-    const url = process.env.SUPABASE_URL;
-    if (!url) throw new Error(`Expected env var SUPABASE_URL`);
+    // const url = process.env.SUPABASE_URL;
+    // if (!url) throw new Error(`Expected env var SUPABASE_URL`);
 
-    const client = createClient(url, privateKey);
+    // const client = createClient(url, privateKey);
 
     // init VectorStore
-    const vectorStore = await SupabaseVectorStore.fromExistingIndex(
-      new OpenAIEmbeddings(),
-      { client, tableName: "documents", queryName: "match_documents" }
-    );
+    const vectorStore = await attachToStore("documents");
 
     // init chain to OpenAI
     const model = new OpenAI();

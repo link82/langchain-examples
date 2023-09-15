@@ -5,7 +5,6 @@ import { ConversationalRetrievalQAChain } from "langchain/chains";
 import { HNSWLib } from "langchain/vectorstores/hnswlib";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { CharacterTextSplitter } from "langchain/text_splitter";
-import { ChatMessage } from 'langchain/schema'
 
 /**
  *
@@ -64,11 +63,12 @@ const initializeChain = async (initialPrompt, transcript) => {
       question: initialPrompt,
       chat_history: chatHistory,
     });
-    console.log('Received response from chain')
-    console.log(response);
 
     // Update history
-    chatHistory.push(new ChatMessage(response.text, 'ai'));
+    chatHistory.push({
+      role: "assistant",
+      content: response.text,
+    });
 
     console.log({ chatHistory });
     return response;
@@ -90,14 +90,12 @@ export default async function handler(req, res) {
 
       try {
         // So first of all, we want to give it our human message, which was to ask for a summary of the YouTube URL
-        const initialPrompt = `Give me a summary of the transcript: ${prompt}. Please be concise. Maximum 100 words.`;
+        const initialPrompt = `Give me a summary of the transcript: ${prompt}`;
 
-        // chatHistory.push({
-        //   role: "user",
-        //   content: initialPrompt,
-        // });
-
-        chatHistory.push(new ChatMessage(initialPrompt, 'user'));
+        chatHistory.push({
+          role: "user",
+          content: initialPrompt,
+        });
 
         // Here, we'll use a generic YouTube Transcript API to get the transcript of a youtube video
         // As you can see, the Transcript takes videoId/videoURL has the first argument to the function
@@ -128,8 +126,8 @@ export default async function handler(req, res) {
 
         // Now, let's create a separate function called initialize chain
         // We'll pass in the first prompt and the context, in this case the transcript
-        const response = await initializeChain(initialPrompt, transcript);
-        //console.log("Chain:", chain);
+        const response = await initializeChain(initialPrompt, transcriptResponse);
+        console.log("Chain:", chain);
         console.log(response);
 
         // And then we'll jsut get the response back and the chatHistory
@@ -150,26 +148,20 @@ export default async function handler(req, res) {
         console.log("Chain:", chain);
 
         // First we'll add the user message
-        // chatHistory.push({
-        //   role: "user",
-        //   content: prompt,
-        // });
-
-        chatHistory.push(new ChatMessage(prompt, 'user'));
-        
-
+        chatHistory.push({
+          role: "user",
+          content: prompt,
+        });
         // Then we'll pass the entire chat history with all the previous messages back
         const response = await chain.call({
           question: prompt,
           chat_history: chatHistory,
         });
         // And we'll add the response back as well
-        // chatHistory.push({
-        //   role: "assistant",
-        //   content: response.text,
-        // });
-        
-        chatHistory.push(new ChatMessage(response.text, 'ai'));
+        chatHistory.push({
+          role: "assistant",
+          content: response.text,
+        });
 
         return res.status(200).json({ output: response, chatHistory });
       } catch (error) {
